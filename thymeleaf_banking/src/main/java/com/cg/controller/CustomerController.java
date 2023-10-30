@@ -61,15 +61,19 @@ public class CustomerController {
 
     @GetMapping("/edit/{id}")
     public String showEditPage(Model model, @PathVariable Long id) {
-        Optional<Customer> customer = customerService.findById(id);
 
+        Optional<Customer> customer = customerService.findById(id);
         if (customer.isEmpty()) {
+            model.addAttribute("success", false);
             model.addAttribute("message", "Can't find any customer with that ID");
+            model.addAttribute("customer", new Customer());
         } else {
+            model.addAttribute("success", true);
             model.addAttribute("customer", customer);
         }
         return "customer/edit";
     }
+
 
     @PostMapping("/edit/{id}")
     public String editCustomer(@ModelAttribute Customer customer, Model model, @PathVariable Long id) {
@@ -93,13 +97,15 @@ public class CustomerController {
     @GetMapping("/deposit/{id}")
     public String showDepositPage(Model model, @PathVariable Long id) {
         Optional<Customer> customer = customerService.findById(id);
-
+        Deposit deposit = new Deposit();
         if (customer.isEmpty()) {
+            model.addAttribute("success",false);
             model.addAttribute("message", "Can't find any customer with that ID");
+            model.addAttribute("deposit",deposit);
         } else {
-            Deposit deposit = new Deposit();
             deposit.setCustomer(customer.get());
             model.addAttribute("deposit", deposit);
+            model.addAttribute("success",true);
         }
         return "customer/deposit";
     }
@@ -128,13 +134,15 @@ public class CustomerController {
     public String showWithdrawPage(Model model, @PathVariable Long id) {
 
         Optional<Customer> customer = customerService.findById(id);
+        Withdraw withdraw = new Withdraw();
 
         if (customer.isEmpty()) {
             model.addAttribute("messageID", "Can't find any customer with that ID");
             model.addAttribute("successWithdraw", false);
-            model.addAttribute("customer", new Customer());
+//            model.addAttribute("customer", new Customer());
+            model.addAttribute("withdraw", withdraw);
         } else {
-            Withdraw withdraw = new Withdraw();
+            model.addAttribute("success",true);
             withdraw.setCustomer(customer.get());
             model.addAttribute("withdraw", withdraw);
         }
@@ -175,6 +183,7 @@ public class CustomerController {
             model.addAttribute("success", false);
             model.addAttribute("message", "Customer not found");
         }
+
 
         model.addAttribute("transfer", transfer);
         model.addAttribute("recipient", recipients);
