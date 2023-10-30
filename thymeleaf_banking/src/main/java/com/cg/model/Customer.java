@@ -42,6 +42,8 @@ public class Customer {
     @OneToMany(mappedBy = "recipient")
     private List<Transfer> transferRecipient;
 
+    
+
     private Boolean deleted = false;
 
     public CustomerResDTO toCustomerResDTO() {

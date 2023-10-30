@@ -58,11 +58,12 @@ public class CustomerController {
         return "customer/create";
     }
 
+
     @GetMapping("/edit/{id}")
     public String showEditPage(Model model, @PathVariable Long id) {
         Optional<Customer> customer = customerService.findById(id);
 
-        if (customer == null) {
+        if (customer.isEmpty()) {
             model.addAttribute("message", "Can't find any customer with that ID");
         } else {
             model.addAttribute("customer", customer);
@@ -93,7 +94,7 @@ public class CustomerController {
     public String showDepositPage(Model model, @PathVariable Long id) {
         Optional<Customer> customer = customerService.findById(id);
 
-        if (customer == null) {
+        if (customer.isEmpty()) {
             model.addAttribute("message", "Can't find any customer with that ID");
         } else {
             Deposit deposit = new Deposit();
@@ -106,7 +107,7 @@ public class CustomerController {
     @PostMapping("/deposit/{id}")
     public String deposit(@ModelAttribute Deposit deposit, @PathVariable Long id, Model model) {
 
-        if (deposit.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (deposit.getTransactionAmount() == null ||deposit.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0) {
             model.addAttribute("message", "Please input deposit bigger than 0");
             model.addAttribute("success", false);
             model.addAttribute("deposit", deposit);
@@ -128,7 +129,7 @@ public class CustomerController {
 
         Optional<Customer> customer = customerService.findById(id);
 
-        if (customer == null) {
+        if (customer.isEmpty()) {
             model.addAttribute("messageID", "Can't find any customer with that ID");
             model.addAttribute("successWithdraw", false);
             model.addAttribute("customer", new Customer());
@@ -143,7 +144,7 @@ public class CustomerController {
     @PostMapping("/withdraw/{id}")
     public String withdraw(@ModelAttribute Withdraw withdraw, RedirectAttributes redirectAttributes, @PathVariable Long id) {
 
-        if (withdraw.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0 || withdraw.getCustomer().getBalance().compareTo(withdraw.getTransactionAmount()) < 0) {
+        if (withdraw.getTransactionAmount() == null ||withdraw.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0 || withdraw.getCustomer().getBalance().compareTo(withdraw.getTransactionAmount()) < 0) {
             redirectAttributes.addFlashAttribute("message", "Please input withdraw bigger than 0 and not lower than current balance");
             redirectAttributes.addFlashAttribute("success", false);
             redirectAttributes.addFlashAttribute("withdraw", withdraw);
@@ -172,7 +173,7 @@ public class CustomerController {
 
         if (sender.isEmpty()) {
             model.addAttribute("success", false);
-            model.addAttribute("message", "Sender not found");
+            model.addAttribute("message", "Customer not found");
         }
 
         model.addAttribute("transfer", transfer);
@@ -199,7 +200,7 @@ public class CustomerController {
         BigDecimal transferAmount = transfer.getTransferAmount();
         BigDecimal senderBalance = transfer.getSender().getBalance();
 
-        if ((transferAmount.compareTo(BigDecimal.ZERO) <= 0) || senderBalance.compareTo(transferAmount) <= 0) {
+        if (transferAmount == null ||(transferAmount.compareTo(BigDecimal.ZERO) <= 0) || senderBalance.compareTo(transferAmount) <= 0) {
             redirectAttributes.addFlashAttribute("success", false);
             redirectAttributes.addFlashAttribute("message", "Please enter Transfer Amount higher than 0 and current Sender balance");
         } else {
