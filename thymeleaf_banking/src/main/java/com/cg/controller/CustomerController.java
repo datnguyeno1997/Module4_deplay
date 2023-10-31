@@ -65,11 +65,12 @@ public class CustomerController {
         Optional<Customer> customer = customerService.findById(id);
         if (customer.isEmpty()) {
             model.addAttribute("success", false);
+            model.addAttribute("checkValid", false);
             model.addAttribute("message", "Can't find any customer with that ID");
             model.addAttribute("customer", new Customer());
         } else {
-            model.addAttribute("success", true);
             model.addAttribute("customer", customer);
+            model.addAttribute("checkValid", true);
         }
         return "customer/edit";
     }
@@ -100,19 +101,20 @@ public class CustomerController {
         Deposit deposit = new Deposit();
         if (customer.isEmpty()) {
             model.addAttribute("success",false);
+            model.addAttribute("checkValid", false);
             model.addAttribute("message", "Can't find any customer with that ID");
             model.addAttribute("deposit",deposit);
         } else {
             deposit.setCustomer(customer.get());
             model.addAttribute("deposit", deposit);
-            model.addAttribute("success",true);
+            model.addAttribute("checkValid", true);
         }
         return "customer/deposit";
     }
 
     @PostMapping("/deposit/{id}")
     public String deposit(@ModelAttribute Deposit deposit, @PathVariable Long id, Model model) {
-
+        model.addAttribute("checkValid", true);
         if (deposit.getTransactionAmount() == null ||deposit.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0) {
             model.addAttribute("message", "Please input deposit bigger than 0");
             model.addAttribute("success", false);
@@ -139,10 +141,10 @@ public class CustomerController {
         if (customer.isEmpty()) {
             model.addAttribute("messageID", "Can't find any customer with that ID");
             model.addAttribute("successWithdraw", false);
-//            model.addAttribute("customer", new Customer());
+            model.addAttribute("checkValid", false);
             model.addAttribute("withdraw", withdraw);
         } else {
-            model.addAttribute("success",true);
+            model.addAttribute("checkValid", true);
             withdraw.setCustomer(customer.get());
             model.addAttribute("withdraw", withdraw);
         }
@@ -151,7 +153,7 @@ public class CustomerController {
 
     @PostMapping("/withdraw/{id}")
     public String withdraw(@ModelAttribute Withdraw withdraw, RedirectAttributes redirectAttributes, @PathVariable Long id) {
-
+        redirectAttributes.addFlashAttribute("checkValid", true);
         if (withdraw.getTransactionAmount() == null ||withdraw.getTransactionAmount().compareTo(BigDecimal.ZERO) <= 0 || withdraw.getCustomer().getBalance().compareTo(withdraw.getTransactionAmount()) < 0) {
             redirectAttributes.addFlashAttribute("message", "Please input withdraw bigger than 0 and not lower than current balance");
             redirectAttributes.addFlashAttribute("success", false);
@@ -162,6 +164,7 @@ public class CustomerController {
             withdraw.setTransactionAmount(null);
             redirectAttributes.addFlashAttribute("withdraw", withdraw);
             redirectAttributes.addFlashAttribute("success", true);
+
             redirectAttributes.addFlashAttribute("message", "Withdraw completed");
         }
         return "redirect:/customers/withdraw/" + id;
@@ -171,7 +174,7 @@ public class CustomerController {
     public String transfer(Model model, @PathVariable Long id) {
         Optional<Customer> sender = customerService.findById(id);
         List<Customer> recipients = customerService.findAllWithoutId(id);
-
+        model.addAttribute("checkValid", true);
         Transfer transfer = new Transfer();
 
         sender.ifPresent(s -> {
@@ -181,12 +184,14 @@ public class CustomerController {
 
         if (sender.isEmpty()) {
             model.addAttribute("success", false);
+            model.addAttribute("checkValid", false);
             model.addAttribute("message", "Customer not found");
         }
 
 
         model.addAttribute("transfer", transfer);
         model.addAttribute("recipient", recipients);
+
 
         return "/customer/transfer";
     }
@@ -200,6 +205,7 @@ public class CustomerController {
 
         if (senderId.isEmpty() || recipientId.isEmpty()) {
             model.addAttribute("success", false);
+            model.addAttribute("checkValid", false);
             model.addAttribute("message", "Not found Sender / Recipient");
 
             return "/customer/transfer";
@@ -208,7 +214,7 @@ public class CustomerController {
 
         BigDecimal transferAmount = transfer.getTransferAmount();
         BigDecimal senderBalance = transfer.getSender().getBalance();
-
+        redirectAttributes.addFlashAttribute("checkValid", true);
         if (transferAmount == null ||(transferAmount.compareTo(BigDecimal.ZERO) <= 0) || senderBalance.compareTo(transferAmount) <= 0) {
             redirectAttributes.addFlashAttribute("success", false);
             redirectAttributes.addFlashAttribute("message", "Please enter Transfer Amount higher than 0 and current Sender balance");
@@ -216,6 +222,7 @@ public class CustomerController {
             customerService.transfer(transfer);
             transfer.setTransferAmount(null);
             redirectAttributes.addFlashAttribute("success", true);
+
             redirectAttributes.addFlashAttribute("message", "Transfer completed");
             redirectAttributes.addFlashAttribute("transfer", transfer);
 

@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <div class="row pt-3" th:if="${success == true}">
+      <div class="row pt-3" th:if="${checkValid == true}">
         <div class="col-lg-3">
           <button type="submit" class="btn btn-outline-secondary">
             <i class="fas fa-plus"></i>
@@ -88,6 +88,7 @@
     </div>
   </footer>
 </th:block>
+
 
 <th:block th:if="${success == false}">
   <footer class="container-fluid error">
